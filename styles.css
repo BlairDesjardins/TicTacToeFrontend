@@ -1,0 +1,85 @@
+@font-face {
+    font-family: blackBoard;
+    src: url(EraserRegular-DO1D.ttf);
+}
+
+body{
+    background-color: #31343a;    
+    font-family: blackBoard;
+    color: white;
+}
+
+.nav{
+    border-color: var(--blue);
+    border-style: solid;
+    border-width: .5em;
+    width:200px;
+    display: flex;
+}
+
+:root {
+    --red: #ffa3a3;
+    --orange: #fbcea0;
+    --green: #b5eeb9;
+    --blue: #addfee;
+    --purple: #d2afea;
+}
+  
+.red-font{
+    font-size: 18pt;
+    color: var(--red);
+}
+
+.navbar .red-font:hover {
+    color: #ff4f4f;
+}
+
+.orange-font{
+    font-size: 18pt;
+    color: var(--orange);
+}
+
+.navbar .orange-font:hover {
+    color: #ff9a35;
+}
+
+.green-font{
+    font-size: 18pt;
+    color: var(--green);
+}
+
+.navbar .green-font:hover {
+    color: #1fd12b;
+}
+
+.blue-font{
+    font-size: 18pt;
+    color: var(--blue);
+}
+
+.purple-font{
+    font-size: 18pt;
+    color: var(--purple);
+}
+
+.cell {
+    height: 200px;
+    font-size: 125px;
+    text-align: center;
+    border: 12px solid transparent;
+    border-image: url("chalk-border.png") 10 stretch;
+}
+
+#board {
+    width: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 10px;
+}
+
+.top-bar {
+    margin: 5px;
+    margin-top: 50px;
+    font-size: 45px;
+}
