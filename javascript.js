@@ -13,40 +13,31 @@ function placeShape(ele) {
 }
 
 function updateBoardState(ele) {
-    switch (ele.id) {
-        case "cell1":
-            board_state[0][0]=ele.innerHTML;
-            checkVictory(0, 0);
-            break;
-        case "cell2":
-            board_state[0][1]=ele.innerHTML;
-            break;
-        case "cell3":
-            board_state[0][2]=ele.innerHTML;
-            break;
-        case "cell4":
-            board_state[1][0]=ele.innerHTML;
-            break;
-        case "cell5":
-            board_state[1][1]=ele.innerHTML;
-            break;
-        case "cell6":
-            board_state[1][2]=ele.innerHTML;
-            break;
-        case "cell7":
-            board_state[2][0]=ele.innerHTML;
-            break;
-        case "cell8":
-            board_state[2][1]=ele.innerHTML;
-            break;
-        case "cell9":
-            board_state[2][2]=ele.innerHTML;
-            break;
+    board_state[ele.getAttribute("data-row")][ele.getAttribute("data-col")] = ele.innerHTML;
+    gameWin = checkVictory(ele.getAttribute("data-row"), ele.getAttribute("data-col"));
+    console.log(gameWin);
+    if (gameWin) {
+        setTimeout(function() {
+            alert(`${ele.innerHTML} has won!`)
+        }, 0);
     }
-
-    console.log(board_state);
 }
 
 function checkVictory(row, col) {
-    
+    if (board_state[row][0] == board_state[row][1] && board_state[row][1] == board_state[row][2]) {
+        return true;
+    }
+    else if (board_state[0][col] == board_state[1][col] && board_state[1][col] == board_state[2][col]) {
+        return true;
+    }
+
+    if (board_state[1][1] != "") {
+        if (board_state[0][0] == board_state[1][1] && board_state[1][1] == board_state[2][2]) {
+            return true;
+        }
+        else if (board_state[0][2] == board_state[1][1] && board_state[1][1] == board_state[2][0]) {
+            return true;
+        }
+    }
+    return false;
 }
