@@ -63,6 +63,7 @@ function buildBoardState(board_string) {
 board_state = [['O', '', ''],['X', '', 'X'],['', 'O', '']]
 updateBoardFromArray()
 
+//NOT WORKING FML
 function updateBoardFromArray() {
     let eles = document.getElementsByClassName("cell")
     for (let i=0; i<eles.length; i++) {
