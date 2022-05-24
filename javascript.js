@@ -1,12 +1,12 @@
 // global vars
-board_state =  [["", "", ""],
-                ["", "", ""],
-                ["", "", ""]]
+var board_state =  [["", "", ""],
+                    ["", "", ""],
+                    ["", "", ""]]
 
-currentPlayer
-gId                 
+var currentPlayer
+var gId
 // will be replaced by user object
-                var name
+var name
 
 
 //places shape duhh!
@@ -23,13 +23,8 @@ function placeShape(ele) {
 function updateBoardHTML(ele) {
     board_state[ele.getAttribute("data-row")][ele.getAttribute("data-col")] = ele.innerHTML;
     gameWin = checkVictory(ele.getAttribute("data-row"), ele.getAttribute("data-col"));
-    if(currentPlayer = x_player_id){
-        currentPlayer - o_player_id
-    }
-    else{
-        currentPlayer= x_player_id
-    }
-    updatedatabase(gameWin)
+
+    updateDatabase(gameWin)
     console.log(board_state.toString());
     if (gameWin) {
         setTimeout(function() {
@@ -125,7 +120,7 @@ async function startGame(x_player_id, o_player_id) {
     }
 }
 
-async function gameStarthandshake(o_player_id){
+async function gameStartHandshake(o_player_id){
     const httpResponse = await fetch(`http://localhost:5000/games/users/${o_player_id}`);
 
     const body = await httpResponse.json();
@@ -139,8 +134,6 @@ async function gameStarthandshake(o_player_id){
         console.log("Failed to update")
     }
 }
-
-
 
 async function getGame(gID) {
     const httpResponse = await fetch(`http://localhost:5000/games/${gID}`);
@@ -156,14 +149,26 @@ async function getGame(gID) {
         console.log("Failed to update")
     }
 }
-async function updatedatabase(gameWin){
+
+// Patches the database after a player places a shape
+async function updateDatabase(gameWin){
+    const winner = (gameWin) ? currentPlayer : null
+
+    if (currentPlayer = x_player_id){
+        currentPlayer = o_player_id
+    }
+    else{
+        currentPlayer = x_player_id
+    }
+
     let game = {
         "gameState": board_state.toString(),
         "isFinished": gameWin,
         "winner": null,
-        "currentPlayer": currentPlayer 
+        "currentPlayer": currentPlayer
     }
-//update end point
+
+// update end point
     const httpResponse = await fetch(`http://localhost:5000/games`, {
         method: "PATCH",
         headers: {
@@ -174,5 +179,4 @@ async function updatedatabase(gameWin){
 
     const body = await httpResponse.json();
     console.log(body); 
-
 }
