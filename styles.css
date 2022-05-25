@@ -110,3 +110,15 @@ body{
     padding-right: 3px;
     background-color: #09090a;  
 }
+
+.login-font{
+    font-size: 18pt;
+    color: var(--red);
+}
+
+.login-font:hover {
+    color: #ff4f4f;
+}
+.login-font:focus{
+    color: var(--red);
+}

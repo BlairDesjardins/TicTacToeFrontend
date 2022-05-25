@@ -180,3 +180,31 @@ async function updateDatabase(gameWin){
     const body = await httpResponse.json();
     console.log(body); 
 }
+
+
+
+// Login js //
+async function login()
+{
+username = document.getElementById("Uname").value 
+password = document.getElementById("password").value
+console.log(username)
+console.log(password)
+
+// const httpResponse = await fetch(`http://localhost:7000/${username}/${password}`);
+
+// const body = await httpResponse.json();
+// console.log(body);
+
+// if (body) {
+//     if (body.password == password){
+//         window.location.href = "main_ page.html"
+//     }
+//     else {
+//         console.log(`password do not match that of user ${username}`)
+//     }
+// } else {
+//     console.log("user not found")
+// }
+
+}
