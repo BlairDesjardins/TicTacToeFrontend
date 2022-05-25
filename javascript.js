@@ -235,6 +235,7 @@ async function updateDatabase(gameWin){
     });
 
     const body = await httpResponse.json();
+
     console.log(body);
 
     if (gameWin) {
@@ -262,4 +263,32 @@ function rechangeButtons() {
         document.getElementById("new-game-btn").classList.remove("d-none")
         document.getElementById("forfeit-btn").classList.add("d-none")
     }
+}
+
+
+// Login js //
+async function login()
+{
+username = document.getElementById("Uname").value 
+password = document.getElementById("password").value
+console.log(username)
+console.log(password)
+
+const httpResponse = await fetch(`http://localhost:7000/login/${username}`);
+
+const body = await httpResponse.json();
+console.log(body);
+
+if (body) {
+    if (body.password == password){
+        localStorage.setItem('username', JSON.stringify(username));
+        window.location.href = "main_page.html"
+    }
+    else {
+        console.log(`password do not match that of user ${username}`)
+    }
+} else {
+    console.log("user not found")
+}
+
 }

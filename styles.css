@@ -132,4 +132,16 @@ body{
 
 .modal-content {
     background-color: #31343a;
+
+.login-font{
+    font-size: 18pt;
+    color: var(--red);
+}
+
+.login-font:hover {
+    color: #ff4f4f;
+}
+  
+.login-font:focus{
+    color: var(--red);
 }
