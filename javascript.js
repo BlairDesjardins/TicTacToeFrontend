@@ -3,28 +3,37 @@ var board_state =  [["", "", ""],
                     ["", "", ""],
                     ["", "", ""]]
 
-var currentPlayer
-var gId
+var game
+
 // will be replaced by user object
-var name
+var user = {
+    "uId": 1,
+    "username": "blair",
+    "wins": 0,
+    "losses": 0
+}
 
 
 //places shape duhh!
-function placeShape(ele) {
-    if (ele.innerHTML == "X") {
-        ele.innerHTML = "O"
-    } else {
-        ele.innerHTML = "X"
+async function placeShape(ele) {
+    if (ele.innerHTML == "" && game != null && game.currentPlayer == user.uId) {
+        if (game.xPlayer == user.uId) {
+            ele.innerHTML = "X"
+            await updateBoardHTML(ele)
+        } else {
+            ele.innerHTML = "O"
+            await updateBoardHTML(ele)
+        }
     }
-    updateBoardHTML(ele)
 }
 
 //updates board when you click a square
-function updateBoardHTML(ele) {
+async function updateBoardHTML(ele) {
     board_state[ele.getAttribute("data-row")][ele.getAttribute("data-col")] = ele.innerHTML;
     gameWin = checkVictory(ele.getAttribute("data-row"), ele.getAttribute("data-col"));
 
-    updateDatabase(gameWin)
+    await updateDatabase(gameWin)
+
     console.log(board_state.toString());
     if (gameWin) {
         setTimeout(function() {
@@ -69,18 +78,14 @@ function buildBoardState(board_string) {
         }
     }
     console.log(board_state)
-    document.addEventListener("DOMContentLoaded", function(e) {updateBoardFromArray()})
+    updateBoardFromArray()
 }
-
-// board_state = [['O', '', ''],['X', '', 'X'],['', 'O', '']]
-
 
 //updates other players screen from database 
 function updateBoardFromArray() {
     const eles = document.getElementsByClassName("cell")
     let elesArray = eles
     for (let i=0; i<elesArray.length; i++) {
-        console.log(i)
         if (i < 3) {
             elesArray[i].innerHTML = board_state[0][i]
         } else if (i < 6) {
@@ -92,7 +97,14 @@ function updateBoardFromArray() {
 }
 
 //starts game by posting to server
-async function startGame(x_player_id, o_player_id) {
+async function startGame() {
+    let x_player_id = user.uId;
+    let o_player_id = document.getElementById("player-name").value;
+    board_state =  [["", "", ""],
+                    ["", "", ""],
+                    ["", "", ""]]
+    updateBoardFromArray()
+
     let game = {
         "xPlayer": x_player_id,
         "oPlayer": o_player_id,
@@ -111,40 +123,64 @@ async function startGame(x_player_id, o_player_id) {
     });
 
     const body = await httpResponse.json();
-    console.log(body);
+    
     if (body) {
-        body.gID
+        game = body
+        localStorage.setItem('game', JSON.stringify(game));
+        console.log(game)
+        
         console.log("Game Started!")
     } else {
         console.log("Game did not start :(")
     }
 }
 
+document.addEventListener("DOMContentLoaded", async function(e) {
+    game = JSON.parse(localStorage.getItem('game'));
+    console.log("Get game from local")
+    console.log(game)
+    if (game == null) {
+        await gameStartHandshake(user.uId)
+    } else {
+        await getGame(game.gId)
+    }
+})
+
 async function gameStartHandshake(o_player_id){
     const httpResponse = await fetch(`http://localhost:5000/games/users/${o_player_id}`);
 
     const body = await httpResponse.json();
-    console.log(body);
 
     if (body) {
-        board_string = body.gameState
-        currentPlayer = body.currentPlayer
+        game = body
+        localStorage.setItem('game', JSON.stringify(game));
+        console.log(game)
+
+        board_string = game.gameState
         buildBoardState(board_string)
     } else {
         console.log("Failed to update")
     }
 }
 
-async function getGame(gID) {
-    const httpResponse = await fetch(`http://localhost:5000/games/${gID}`);
+async function getGame(gId) {
+    const httpResponse = await fetch(`http://localhost:5000/games/${gId}`);
 
     const body = await httpResponse.json();
-    console.log(body);
 
     if (body) {
-        board_string = body.gameState
-        currentPlayer = body.currentPlayer
-        buildBoardState(board_string)
+        if (body.isFinished) {
+            game = null
+            localStorage.setItem('game', null);
+        } else {
+            game = body
+            localStorage.setItem('game', JSON.stringify(game));
+            console.log("Get game from server")
+            console.log(game)
+
+            board_string = game.gameState
+            buildBoardState(board_string)
+        }
     } else {
         console.log("Failed to update")
     }
@@ -152,31 +188,39 @@ async function getGame(gID) {
 
 // Patches the database after a player places a shape
 async function updateDatabase(gameWin){
-    const winner = (gameWin) ? currentPlayer : null
+    const winner = (gameWin) ? game.currentPlayer : null
 
-    if (currentPlayer = x_player_id){
-        currentPlayer = o_player_id
+    if (game.currentPlayer == game.xPlayer) {
+        game.currentPlayer = game.oPlayer
     }
-    else{
-        currentPlayer = x_player_id
+    else {
+        game.currentPlayer = game.xPlayer
     }
 
-    let game = {
+    var gameUpdate = {
         "gameState": board_state.toString(),
         "isFinished": gameWin,
-        "winner": null,
-        "currentPlayer": currentPlayer
+        "winner": winner,
+        "currentPlayer": game.currentPlayer
     }
 
-// update end point
-    const httpResponse = await fetch(`http://localhost:5000/games`, {
+    // update end point
+    const httpResponse = await fetch(`http://localhost:5000/games/${game.gId}`, {
         method: "PATCH",
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(game)
+        body: JSON.stringify(gameUpdate)
     });
 
     const body = await httpResponse.json();
-    console.log(body); 
+    console.log(body);
+
+    if (gameWin) {
+        game = null
+        localStorage.setItem('game', null);
+        board_state =  [["", "", ""],
+                        ["", "", ""],
+                        ["", "", ""]]
+    }
 }
