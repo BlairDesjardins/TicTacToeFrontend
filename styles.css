@@ -95,7 +95,7 @@ body{
     font-size: 45px;
 }
 
-.playercard{
+.playercard {
     border-style: solid;
     /* border-color: white; */
     border-width: 3px;
@@ -105,8 +105,17 @@ body{
     background-color: #09090a;
     margin-top: 25px;
 }
-.card{
+
+.card {
     padding-left: 3px;
     padding-right: 3px;
     background-color: #09090a;  
+}
+
+#new-game-btn {
+    font-size: 24px;
+}
+
+.modal-content {
+    background-color: #31343a;
 }
