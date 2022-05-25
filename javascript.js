@@ -13,17 +13,28 @@ var user = {
     "losses": 0
 }
 
+document.addEventListener("DOMContentLoaded", async function(e) {
+    game = JSON.parse(localStorage.getItem('game'));
+    console.log("Get game from local")
+    console.log(game)
+    if (game == null) {
+        await gameStartHandshake(user.uId)
+    } else {
+        await getGame(game.gId)
+    }
+    rechangeButtons()
+    updateTurn()
+})
 
 //places shape duhh!
 async function placeShape(ele) {
     if (ele.innerHTML == "" && game != null && game.currentPlayer == user.uId) {
         if (game.xPlayer == user.uId) {
             ele.innerHTML = "X"
-            await updateBoardHTML(ele)
         } else {
             ele.innerHTML = "O"
-            await updateBoardHTML(ele)
         }
+        await updateBoardHTML(ele)
     }
 }
 
@@ -105,7 +116,7 @@ async function startGame() {
                     ["", "", ""]]
     updateBoardFromArray()
 
-    let game = {
+    let newGame = {
         "xPlayer": x_player_id,
         "oPlayer": o_player_id,
         "gameState": board_state.toString(),
@@ -119,60 +130,66 @@ async function startGame() {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(game)
+        body: JSON.stringify(newGame)
     });
 
     const body = await httpResponse.json();
     
     if (body) {
         game = body
-        localStorage.setItem('game', JSON.stringify(game));
         console.log(game)
+        localStorage.setItem('game', JSON.stringify(game));
         
+        updateTurn()
+        rechangeButtons()
         console.log("Game Started!")
     } else {
         console.log("Game did not start :(")
     }
 }
 
-document.addEventListener("DOMContentLoaded", async function(e) {
-    game = JSON.parse(localStorage.getItem('game'));
-    console.log("Get game from local")
-    console.log(game)
-    if (game == null) {
-        await gameStartHandshake(user.uId)
-    } else {
-        await getGame(game.gId)
-    }
-})
-
-async function gameStartHandshake(o_player_id){
-    const httpResponse = await fetch(`http://localhost:5000/games/users/${o_player_id}`);
-
-    const body = await httpResponse.json();
-
-    if (body) {
-        game = body
-        localStorage.setItem('game', JSON.stringify(game));
-        console.log(game)
-
-        board_string = game.gameState
-        buildBoardState(board_string)
-    } else {
-        console.log("Failed to update")
-    }
+async function gameStartHandshake(player_id){
+    const httpResponse = await fetch(`http://localhost:5000/games/users/${player_id}`)
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else if(response.status === 404) {
+                return Promise.reject('error 404')
+            } else {
+                return Promise.reject('some other error: ' + response.status)
+            }
+        })
+        .then(body => {
+            game = body
+            localStorage.setItem('game', JSON.stringify(game));
+            console.log(game)
+    
+            board_string = game.gameState
+            buildBoardState(board_string)
+        })
+        .catch(error => {
+            game = null
+            localStorage.setItem('game', null);
+            console.log('error is', error)
+        })
 }
 
 async function getGame(gId) {
-    const httpResponse = await fetch(`http://localhost:5000/games/${gId}`);
-
-    const body = await httpResponse.json();
-
-    if (body) {
-        if (body.isFinished) {
-            game = null
-            localStorage.setItem('game', null);
-        } else {
+    const httpResponse = await fetch(`http://localhost:5000/games/${gId}`)
+        .then(response => {
+            if (response.ok) {
+                return response.json()
+            } else if(response.status === 404) {
+                return Promise.reject('error 404')
+            } else {
+                return Promise.reject('some other error: ' + response.status)
+            }
+        })
+        .then(body => {
+            if (body.isFinished) {
+                game = null
+                localStorage.setItem('game', null);
+            }
             game = body
             localStorage.setItem('game', JSON.stringify(game));
             console.log("Get game from server")
@@ -180,10 +197,12 @@ async function getGame(gId) {
 
             board_string = game.gameState
             buildBoardState(board_string)
-        }
-    } else {
-        console.log("Failed to update")
-    }
+        })
+        .catch(error => {
+            game = null
+            localStorage.setItem('game', null);
+            console.log('error is', error)
+        })
 }
 
 // Patches the database after a player places a shape
@@ -196,6 +215,8 @@ async function updateDatabase(gameWin){
     else {
         game.currentPlayer = game.xPlayer
     }
+
+    updateTurn()
 
     var gameUpdate = {
         "gameState": board_state.toString(),
@@ -222,5 +243,23 @@ async function updateDatabase(gameWin){
         board_state =  [["", "", ""],
                         ["", "", ""],
                         ["", "", ""]]
+        rechangeButtons()
+    }
+}
+
+function updateTurn() {
+    if (game) {
+        const yourTurn = game.currentPlayer == user.uId
+        document.getElementById("turn").innerHTML = yourTurn ? "Your Turn" : "Opponent's Turn"
+    }
+}
+
+function rechangeButtons() {
+    if (game) {
+        document.getElementById("new-game-btn").classList.add("d-none")
+        document.getElementById("forfeit-btn").classList.remove("d-none")
+    } else {
+        document.getElementById("new-game-btn").classList.remove("d-none")
+        document.getElementById("forfeit-btn").classList.add("d-none")
     }
 }

@@ -41,6 +41,9 @@
             <button id="new-game-btn" type="button" class="btn btn-dark btn-lg" data-bs-toggle="modal" data-bs-target="#newGameModal">
                 New Game
             </button>
+            <button id="forfeit-btn" type="button" class="btn btn-dark btn-lg d-none">
+                Forfeit
+            </button>
             <span id="turn">
                 Your Turn
             </span>
@@ -70,7 +73,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                     <h5 class="modal-title">Invite Player to New Game</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
@@ -79,7 +82,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                    <button onclick="startGame()" type="button" class="btn btn-primary">Start Game</button>
+                        <button onclick="startGame()" type="button" class="btn btn-primary" data-bs-dismiss="modal">Start Game</button>
                     </div>
                 </div>
             </div>
