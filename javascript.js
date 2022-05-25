@@ -265,8 +265,54 @@ function rechangeButtons() {
     }
 }
 
+function forfeit(){
+
+        if(user.uId == xPlayer)
+        {
+            winner = oPlayer
+        }
+        else {
+            winner = xPlayer
+        }
+
+    
+    var gameUpdate = {
+        "gameState": board_state.toString(),
+        "isFinished": true,
+        "winner": winner,
+        "currentPlayer": game.currentPlayer
+    }
+
+    // update end point
+    const httpResponse = await fetch(`http://localhost:5000/games/${game.gId}`, {
+        method: "PATCH",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gameUpdate)
+    });
+
+    const body = await httpResponse.json();
+
+   if(body)
+   {
+    game = null
+    localStorage.setItem('game', null);
+    board_state =  [["", "", ""],
+                    ["", "", ""],
+                    ["", "", ""]]
+    rechangeButtons()
+   }
+   else{
+       console.log("error game failed to quit")
+   }
+}
+
+
+
 
 // Login js //
+
 async function login()
 {
 username = document.getElementById("Uname").value 
