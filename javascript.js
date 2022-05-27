@@ -5,36 +5,38 @@ var board_state =  [["", "", ""],
 
 var game
 
-// will be replaced by user object
-var user = {
-    "uId": 1,
-    "username": "blair",
-    "wins": 0,
-    "losses": 0
-}
+var user
 
 document.addEventListener("DOMContentLoaded", async function(e) {
     game = JSON.parse(localStorage.getItem('game'));
+    user = JSON.parse(localStorage.getItem('user'));
+    console.log(user)
     console.log("Get game from local")
     console.log(game)
     if (game == null) {
-        await gameStartHandshake(user.uId)
+        await gameStartHandshake(user.u_id)
     } else {
         await getGame(game.gId)
     }
     rechangeButtons()
     updateTurn()
+    checkVictoryOnLoad()
 })
 
 //places shape duhh!
 async function placeShape(ele) {
-    if (ele.innerHTML == "" && game != null && game.currentPlayer == user.uId) {
-        if (game.xPlayer == user.uId) {
-            ele.innerHTML = "X"
-        } else {
-            ele.innerHTML = "O"
+    if (game != null) {
+        await getGame(game.gId)
+        if (ele.innerHTML == "" && !game.isFinished && game.currentPlayer == user.u_id) {
+            console.log("in place shape if statement")
+            console.log(game)
+            if (game.xPlayer == user.u_id) {
+                ele.innerHTML = "X"
+            } else {
+                ele.innerHTML = "O"
+            }
+            await updateBoardHTML(ele)
         }
-        await updateBoardHTML(ele)
     }
 }
 
@@ -48,7 +50,7 @@ async function updateBoardHTML(ele) {
     console.log(board_state.toString());
     if (gameWin) {
         setTimeout(function() {
-            alert(`${ele.innerHTML} has won!`)
+            alert(`You won!`)
         }, 0);
     }
 }
@@ -109,7 +111,7 @@ function updateBoardFromArray() {
 
 //starts game by posting to server
 async function startGame() {
-    let x_player_id = user.uId;
+    let x_player_id = user.u_id;
     let o_player_id = document.getElementById("player-name").value;
     board_state =  [["", "", ""],
                     ["", "", ""],
@@ -160,18 +162,35 @@ async function gameStartHandshake(player_id){
             }
         })
         .then(body => {
-            game = body
-            localStorage.setItem('game', JSON.stringify(game));
-            console.log(game)
-    
-            board_string = game.gameState
-            buildBoardState(board_string)
+            getGameHelper(body)
         })
         .catch(error => {
             game = null
             localStorage.setItem('game', null);
             console.log('error is', error)
         })
+}
+
+function getGameHelper(body) {
+    if (body.isFinished) {
+        const winner = body.winner == user.u_id ? "You Won!" : "You Lost!"
+        console.log("game helper")
+        console.log(body.winner)
+        setTimeout(function() {
+            alert(`${winner}`)
+        }, 0);
+
+        game = null
+        board_state =  [["", "", ""],
+                        ["", "", ""],
+                        ["", "", ""]]
+        localStorage.setItem('game', null);
+    } else {
+        game = body
+        localStorage.setItem('game', JSON.stringify(game));
+        board_string = game.gameState
+        buildBoardState(board_string)
+    }
 }
 
 async function getGame(gId) {
@@ -186,17 +205,9 @@ async function getGame(gId) {
             }
         })
         .then(body => {
-            if (body.isFinished) {
-                game = null
-                localStorage.setItem('game', null);
-            }
-            game = body
-            localStorage.setItem('game', JSON.stringify(game));
+            getGameHelper(body)
             console.log("Get game from server")
             console.log(game)
-
-            board_string = game.gameState
-            buildBoardState(board_string)
         })
         .catch(error => {
             game = null
@@ -236,6 +247,7 @@ async function updateDatabase(gameWin){
 
     const body = await httpResponse.json();
 
+    console.log("update database")
     console.log(body);
 
     if (gameWin) {
@@ -250,13 +262,13 @@ async function updateDatabase(gameWin){
 
 function updateTurn() {
     if (game) {
-        const yourTurn = game.currentPlayer == user.uId
+        const yourTurn = game.currentPlayer == user.u_id
         document.getElementById("turn").innerHTML = yourTurn ? "Your Turn" : "Opponent's Turn"
     }
 }
 
 function rechangeButtons() {
-    if (game) {
+    if (game && !game.isFinished) {
         document.getElementById("new-game-btn").classList.add("d-none")
         document.getElementById("forfeit-btn").classList.remove("d-none")
     } else {
@@ -265,30 +277,80 @@ function rechangeButtons() {
     }
 }
 
+function checkVictoryOnLoad() {
+    if (game && game.isFinished) {
+        const winner = game.winner == user.u_id ? "You Won!" : "You Lost!"
+        game = null
+        localStorage.setItem('game', null);
+        board_state =  [["", "", ""],
+                        ["", "", ""],
+                        ["", "", ""]]
+        setTimeout(function() {
+            alert(`${winner}`)
+        }, 0);
+    }
+}
+
+
+// Patches the database after a player places a shape
+async function forfeit() {
+    let winner = user.u_id == game.xPlayer ? game.oPlayer : game.xPlayer
+
+    var gameUpdate = {
+        "gameState": board_state.toString(),
+        "isFinished": true,
+        "winner": winner,
+        "currentPlayer": game.currentPlayer
+    }
+
+    // update end point
+    const httpResponse = await fetch(`http://localhost:5000/games/${game.gId}`, {
+        method: "PATCH",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gameUpdate)
+    });
+
+    const body = await httpResponse.json();
+
+    console.log(body);
+
+    game = null
+    localStorage.setItem('game', null);
+    board_state =  [["", "", ""],
+                    ["", "", ""],
+                    ["", "", ""]]
+    rechangeButtons()
+
+    setTimeout(function() {
+        alert(`You Lost!`)
+    }, 0);
+}
+
 
 // Login js //
 async function login()
 {
-username = document.getElementById("Uname").value 
-password = document.getElementById("password").value
-console.log(username)
-console.log(password)
+    username = document.getElementById("Uname").value 
+    password = document.getElementById("password").value
+    console.log(username)
+    console.log(password)
 
-const httpResponse = await fetch(`http://localhost:7000/login/${username}`);
+    const httpResponse = await fetch(`http://localhost:7000/login/${username}`);
 
-const body = await httpResponse.json();
-console.log(body);
+    const body = await httpResponse.json();
+    console.log(body);
 
-if (body) {
-    if (body.password == password){
-        localStorage.setItem('username', JSON.stringify(username));
-        window.location.href = "main_page.html"
+    if (body) {
+        if (body.password == password){
+            localStorage.setItem('user', JSON.stringify(body));
+            window.location.href = "main_page.html"
+        }
+        else {
+            console.log(`password do not match that of user ${username}`)
+        }
+    } else {
+        console.log("user not found")
     }
-    else {
-        console.log(`password do not match that of user ${username}`)
-    }
-} else {
-    console.log("user not found")
-}
-
 }
