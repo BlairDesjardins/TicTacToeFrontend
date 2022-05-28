@@ -21,6 +21,8 @@ document.addEventListener("DOMContentLoaded", async function(e) {
     rechangeButtons()
     updateTurn()
     checkVictoryOnLoad()
+    usernameUpdate()
+    updateOpponent()
 })
 
 //places shape duhh!
@@ -354,3 +356,75 @@ async function login()
         console.log("user not found")
     }
 }
+
+function usernameUpdate() {
+    console.log("in user update")
+    console.log(user.username)
+    let eles = document.getElementsByClassName("username");
+    for (ele of eles) {
+        console.log(ele)
+        ele.innerHTML = user.username
+    }
+}
+
+async function updateOpponent() {
+
+    let xname = document.getElementById("xplayer");
+    let oname = document.getElementById("oplayer");
+    const Xresponce = await fetch(`http://localhost:7000/users/${game.x_player_id}`);
+    const Xplayer = await Xresponce.json();
+    const Oresponce = await fetch(`http://localhost:7000/users/${game.o_player_id}`);
+    const Oplayer = await Oresponce.json();
+    xname.innerHTML= Xplayer.username
+    oname.innerHTML=Oplayer.username
+}
+
+function leaderboardload(){
+let xwin = document.getElementById("uwin");
+xwin.innerHTML = `Wins: ${user.wins}`;
+console.log(user.wins);
+let xloses = document.getElementById("ulosses");
+xloses.innerHTML = `Losses: ${user.losses}`;
+console.log(user.losses);
+rank = (user.wins / user.losses)
+let xranking = document.getElementById("uranking");
+xranking.innerHTML = `Rank: ${rank}`;
+console.log(rank);
+}
+
+// async function LeaderBoard(){
+// const tbody = document.getElementById("Leader")
+
+// const url = `http://localhost:7000/users`
+
+// const httpResponse = await fetch(url)
+
+// const rows = await httpResponse.json()
+
+// console.log(rows)
+// tbody.innerHTML= ""
+
+// users.sort((a, b) => {
+// return (a.wins/a.losses) - (b.wins/b.losses);
+// });
+
+// console.log(user)
+
+// // for (const row of rows) {
+// //     console.log(row)
+// //     const rowElement = document.createElement("tr")
+// //     rank = (row.win / row.lost) * 100
+
+// //     const celElement = document.createElement("td")
+// //     celElement.innerText= 
+// //     rowElement.appendChild(celElement)
+
+
+// //     // for(const cel of row){
+// //     //     const celElement = document.createElement("td")
+// //     //     celElement.innerText= cel
+// //     //     rowElement.appendChild(celElement)
+// //     //     }
+// //     tbody.appendChild(rowElement)        
+// // }
+// }
