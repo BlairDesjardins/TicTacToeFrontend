@@ -150,6 +150,8 @@ async function startGame() {
     } else {
         console.log("Game did not start :(")
     }
+
+    updateOpponent()
 }
 
 async function gameStartHandshake(player_id){
@@ -362,34 +364,31 @@ function usernameUpdate() {
     console.log(user.username)
     let eles = document.getElementsByClassName("username");
     for (ele of eles) {
-        console.log(ele)
         ele.innerHTML = user.username
     }
 }
 
 async function updateOpponent() {
 
-    let xname = document.getElementById("xplayer");
-    let oname = document.getElementById("oplayer");
-    const Xresponce = await fetch(`http://localhost:7000/users/${game.x_player_id}`);
-    const Xplayer = await Xresponce.json();
-    const Oresponce = await fetch(`http://localhost:7000/users/${game.o_player_id}`);
-    const Oplayer = await Oresponce.json();
-    xname.innerHTML= Xplayer.username
-    oname.innerHTML=Oplayer.username
+    let players = document.getElementById("players");
+    const Xresponse = await fetch(`http://localhost:7000/users/${game.xPlayer}`);
+    const Xplayer = await Xresponse.json();
+    const Oresponse = await fetch(`http://localhost:7000/users/${game.oPlayer}`);
+    const Oplayer = await Oresponse.json();
+    players.innerHTML = `${Xplayer.username} (X) VS ${Oplayer.username} (O)`
 }
 
 function leaderboardload(){
-let xwin = document.getElementById("uwin");
-xwin.innerHTML = `Wins: ${user.wins}`;
-console.log(user.wins);
-let xloses = document.getElementById("ulosses");
-xloses.innerHTML = `Losses: ${user.losses}`;
-console.log(user.losses);
-rank = (user.wins / user.losses)
-let xranking = document.getElementById("uranking");
-xranking.innerHTML = `Rank: ${rank}`;
-console.log(rank);
+    let xwin = document.getElementById("uwin");
+    xwin.innerHTML = `Wins: ${user.wins}`;
+    console.log(user.wins);
+    let xloses = document.getElementById("ulosses");
+    xloses.innerHTML = `Losses: ${user.losses}`;
+    console.log(user.losses);
+    rank = (user.wins / user.losses)
+    let xranking = document.getElementById("uranking");
+    xranking.innerHTML = `Rank: ${rank}`;
+    console.log(rank);
 }
 
 // async function LeaderBoard(){
